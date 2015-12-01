@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-namespace UnityUtilities.Transformation
+namespace mnUtilities.Transformation
 {
 	[AddComponentMenu("Transformation/Translate")]
 	public class Translate : MonoBehaviour 
