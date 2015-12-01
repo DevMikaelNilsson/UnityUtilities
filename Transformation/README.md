@@ -1,6 +1,6 @@
 
 * ##FollowTerrain.cs
-rotates a object in to follow the angle of a Unity Terrain object.
+rotates a object in to follow the angle of a object.
 
 * ##LookAt.cs
 Makes a object to look at a position by rotating the object towards the target position.
