@@ -8,6 +8,8 @@ namespace TabUtilities.Transformation
 	{
 		[Tooltip("The object which will be translated. If empty the object, which the component is attached to, will be translated.")]
 		public Transform TranslateObject = null;
+		[Tooltip("Enable to allow the object to be translated when the component is enabled/re-enabled. If this flag is set to false, the translation can be manually activated.")]
+		public bool ActiveOnStart = true;		
 		[Tooltip("Which axis the object will be translated.")]
 		public Vector3 TranslationAxis = Vector3.right;
 		[Tooltip("Speed of the translation. This final position value is mutliplied with deltaTime and timeScale. \nEx:\nPosition += ((TranslationAxis * TranslationSpeed) * (Time.deltaTime * Time.timeScale)).")]
@@ -16,6 +18,15 @@ namespace TabUtilities.Transformation
 		public Space RelativeTo = Space.Self;
 		[Tooltip("Flag to determin if the translation should occur. As long as this flag is set to true, the object will be translated every update cycle.")]
 		public bool Active = true;
+
+		/// <summary>
+		/// Internal Unity method.
+		/// This method is called once when the object is enabled/re-enabled.
+		/// </summary>
+		void OnEnable()
+		{
+			Active = ActiveOnStart;
+		}
 
 		/// <summary>
 		/// Internal Unity method.
