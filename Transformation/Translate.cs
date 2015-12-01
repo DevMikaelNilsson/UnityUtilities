@@ -35,6 +35,15 @@ namespace TabUtilities.Transformation
 		}
 		
 		/// <summary>
+		/// Deactivates the translation.
+		/// The position of the object will not be resetted or changed by this method.
+		/// </summary>
+		public void Deactivate()
+		{
+			Active = false;
+		}
+		
+		/// <summary>
 		/// Activates the translation with pre-defined values.
 		/// </summary>
 		public void Activate()
