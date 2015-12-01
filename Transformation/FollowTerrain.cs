@@ -20,9 +20,9 @@ namespace mnUtilities.Transformation
 		public string RaycastLayerMask = string.Empty;
 
 		private int m_layerMaskValue = 0;
-		Quaternion m_oldRotation = Quaternion.identity;
-		Quaternion m_newRotation = Quaternion.identity;
-		Vector3 m_oldPosition = Vector3.zero;
+		private Quaternion m_oldRotation = Quaternion.identity;
+		private Quaternion m_newRotation = Quaternion.identity;
+		private Vector3 m_oldPosition = Vector3.zero;
 		
 		/// <summary>
 		/// Internal Unity method.
