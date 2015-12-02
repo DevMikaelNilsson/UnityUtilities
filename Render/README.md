@@ -1,4 +1,4 @@
-#mnUtilities/Render/
+#mnUtilities.Render
 
 ##Fade.cs
 Makes a object fade in at start (when enabled) and can make a object fade out at any time.
