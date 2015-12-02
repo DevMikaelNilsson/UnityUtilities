@@ -1,4 +1,4 @@
-#mnUtilities/Transformation/
+#mnUtilities.Transformation
 Components in this subfolder are used to in different ways to transform a object either by positioning, rotation or scaling.
 All components can be found in the Unity editor menu under: Component->Transformation.
 
