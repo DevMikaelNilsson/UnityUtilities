@@ -17,12 +17,14 @@ namespace mnUtilities.Transformation
 		[Tooltip("The duration (in seconds) of the smooth rotation. This variable is only used when the 'SmoothRotation' flag is enabled.")]
 		public float SmootValue = 1.0f;
 		[Tooltip("All mask layers the component is allowed to search for the terrain object. If left empty the raycast may never get a proper hit.")]
-		public string RaycastLayerMask = string.Empty;
+		public string RaycastLayerMask = string.Empty;		
+		[Tooltip("Maximum allowed rotation angle (in degrees) the component should allow. If the angle between the new rotation, and the current rotation, exceeds this value, then the new rotation will not be accepted.")]
+		public float MaxRotationAngle = 25.0f;
 
 		private int m_layerMaskValue = 0;
-		private Quaternion m_oldRotation = Quaternion.identity;
-		private Quaternion m_newRotation = Quaternion.identity;
-		private Vector3 m_oldPosition = Vector3.zero;
+		Quaternion m_oldRotation = Quaternion.identity;
+		Quaternion m_newRotation = Quaternion.identity;
+		Vector3 m_oldPosition = Vector3.zero;
 		
 		/// <summary>
 		/// Internal Unity method.
@@ -70,6 +72,10 @@ namespace mnUtilities.Transformation
 			{
 				m_oldRotation = AffectedObject.rotation;
 				m_newRotation = CalculateLookRotation(-hitInfo.normal);
+				
+				float rotationAngle = Quaternion.Angle(m_newRotation, m_oldRotation);
+				if(rotationAngle > MaxRotationAngle)
+					m_newRotation = m_oldRotation;				
 			}
 		}
 
