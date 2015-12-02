@@ -29,13 +29,41 @@ namespace mnUtilities.Render
 			/// </summary>
 			FadeOut = 2
 		}
-
+		
+		/// <summary>
+		/// Object which will be faded out/in by the component. If left empty, the component will use the GameObject which it is attached to.		
+		/// </summary>
+		[Tooltip("Object which will be faded out/in by the component. If left empty, the component will use the GameObject which it is attached to.")]
+		public GameObject FadingObject = null;
+				
+		/// <summary>
+		/// Optional object to display instead of the FadingObject after the fade in is done. When fade in is completed the FadingObject is disabled and this object is enabled. 
+		/// This is usefull if a object should only be transparent while fading
+		/// </summary>
+		[Tooltip("Optional object to display instead of the FadingObject after the fade in is done. When fade in is completed the FadingObject is disabled and this object is enabled. This is usefull if a object should only be transparent while fading.")]
+		public GameObject OpaqueObject = null;
+		
+		/// <summary>
+		/// Enable to perform a fade in on the object when it has been enabled/re-enabled.
+		/// </summary>
 		[Tooltip("Enable to perform a fade in on the object when it has been enabled/re-enabled.")]
 		public bool FadeInOnStart = false;
+		
+		/// <summary>
+		/// Delay (in seconds) until a fade in is started. This delay is only applicable when the 'FadeInOnStart' flag is enabled.
+		/// </summary>
 		[Tooltip("Delay (in seconds) until a fade in is started. This delay is only applicable when the 'FadeInOnStart' flag is enabled.")]
 		public float DelayFadeIn = 1.0f;
+		
+		/// <summary>
+		/// Enable to allow all the child object(s) to be included into the fade calculation.
+		/// </summary>
 		[Tooltip("Enable to allow all the child object(s) to be included into the fade calculation.")]
 		public bool IncludeChildObjects = true;
+		
+		/// <summary>
+		/// The amount of time (in seconds) it takes to fully fade in/out the object and its children objects.
+		/// </summary>
 		[Tooltip("The amount of time (in seconds) it takes to fully fade in/out the object and its children objects.")]
 		public float Duration = 1.0f;
 
@@ -52,9 +80,12 @@ namespace mnUtilities.Render
 		/// </summary>
 		void OnEnable()
 		{
+			if(FadingObject == null)
+				FadingObject = this.gameObject;
+				
 			if(m_meshRenderComponents.Count <= 0)
 				LoadMeshRendererComponents();
-
+							
 			if(FadeInOnStart == true)
 			{
 				SetAlphaValue(0.0f);
@@ -109,9 +140,22 @@ namespace mnUtilities.Render
 			SetAlphaValue(currentAlphaValue);
 
 			if(procentage >= 1.0f)
-				m_currentFadeStatus = FadeStatus.Waiting;
+				FadeObjectFinished();
 		}
 		
+		/// <summary>
+		/// This method gets called whenever the fade (in/out) calculation is finished, and reset the fade variables.
+		/// </summary>
+		private void FadeObjectFinished()
+		{
+			ToggleOpaqueObject(true);
+			m_currentFadeStatus = FadeStatus.Waiting;
+		}
+		
+		/// <summary>
+		/// Set a alpha value on all registered render objects.
+		/// </summary>
+		/// <param name="currentAlphaValue">Current alpha value.</param>
 		private void SetAlphaValue(float currentAlphaValue)
 		{
 			int objectCount = m_meshRenderComponents.Count;
@@ -172,6 +216,36 @@ namespace mnUtilities.Render
 			m_elapsedTime = 0.0f;
 			m_currentDuration = duration;
 			m_currentFadeStatus = newFadeStatus;
+			switch(m_currentFadeStatus)
+			{
+				case FadeStatus.FadeIn:
+				case FadeStatus.FadeOut:
+					ToggleOpaqueObject(false);
+					break;
+			}
+		}
+		
+		/// <summary>
+		/// Toggles the OpaqueObject to be enabled or disabled.
+		/// Whenever the OpaqueObject is enabled, the fadingObject is disabled and vice versa.
+		/// If the OpaqueObject is not valid or empty, this method will be ignored.
+		/// </summary>
+		/// <param name="setOpaqueAsActive">Set to true, to enable the OpaqueObject. Set to false otherwise.</param>
+		private void ToggleOpaqueObject(bool setOpaqueAsActive)
+		{	
+			if(OpaqueObject != null)
+			{
+				if(setOpaqueAsActive == true)
+				{
+					OpaqueObject.SetActive(true);
+					FadingObject.SetActive(false);
+				}
+				else
+				{
+					OpaqueObject.SetActive(false);
+					FadingObject.SetActive(true);
+				}
+			}
 		}
 
 		/// <summary>
@@ -181,28 +255,32 @@ namespace mnUtilities.Render
 		/// </summary>
 		public void LoadMeshRendererComponents()
 		{
-			m_meshRenderComponents.Clear();
-
-			SkinnedMeshRenderer selfSkinnedMeshComponent = this.GetComponent<SkinnedMeshRenderer>();
-			MeshRenderer selfMeshRenderComponent = this.GetComponent<MeshRenderer>();
-			if(selfSkinnedMeshComponent != null)
-				m_meshRenderComponents.Add(selfSkinnedMeshComponent);
-			if (selfMeshRenderComponent != null)
-				m_meshRenderComponents.Add(selfMeshRenderComponent);
-
-			if(IncludeChildObjects == true)
+			if(FadingObject != null)
 			{
-				SkinnedMeshRenderer []skinnedRender = this.GetComponentsInChildren<SkinnedMeshRenderer>();
-				MeshRenderer[] meshRender = this.GetComponentsInChildren<MeshRenderer>();
-
-				int objectCount = skinnedRender.Length;
-				for(int i = 0; i < objectCount; ++i)
-					m_meshRenderComponents.Add(skinnedRender[i]);
-
-				objectCount = meshRender.Length;
-				for (int i = 0; i < objectCount; ++i)
-					m_meshRenderComponents.Add(meshRender[i]);
+				m_meshRenderComponents.Clear();
+				SkinnedMeshRenderer selfSkinnedMeshComponent = FadingObject.GetComponent<SkinnedMeshRenderer>();
+				MeshRenderer selfMeshRenderComponent = FadingObject.GetComponent<MeshRenderer>();
+				if(selfSkinnedMeshComponent != null)
+					m_meshRenderComponents.Add(selfSkinnedMeshComponent);
+				if (selfMeshRenderComponent != null)
+					m_meshRenderComponents.Add(selfMeshRenderComponent);
+	
+				if(IncludeChildObjects == true)
+				{
+					SkinnedMeshRenderer []skinnedRender = FadingObject.GetComponentsInChildren<SkinnedMeshRenderer>();
+					MeshRenderer[] meshRender = FadingObject.GetComponentsInChildren<MeshRenderer>();
+	
+					int objectCount = skinnedRender.Length;
+					for(int i = 0; i < objectCount; ++i)
+						m_meshRenderComponents.Add(skinnedRender[i]);
+	
+					objectCount = meshRender.Length;
+					for (int i = 0; i < objectCount; ++i)
+						m_meshRenderComponents.Add(meshRender[i]);
+				}
 			}
+			else
+				Debug.LogError(this + " - GameObject is either missing or not valid. Can not retrieve MeshRender component(s).");
 		}
 
 		/// <summary>
