@@ -8,8 +8,10 @@ namespace mnUtilities.Transformation
 	{
 		[Tooltip("Object which will be updated by this component. If this variable is empty, then the component will assign itself as object.")]
 		public Transform AffectedObject = null;
+
 		[Tooltip("A Child Transform object which will be used as a point where the raycast will be fired. If left empty the component will use the AffectedObjects position for the raycast.")]
 		public Transform OffsetPoint = null;
+
 		[Tooltip("Enable to set the orientation every LateUpdate cycle.")]
 		public bool ContinousUpdate = true;
 		[Tooltip("Enable to allow the component to smoothly rotate the object towards the calculated rotation. The smooth rotation will restart every time the rotation values are updated, which can be as often as once per update frame.")]
@@ -55,7 +57,7 @@ namespace mnUtilities.Transformation
 				UpdateObjectRotation();
 			
 				if(SmoothRotation == true)
-					AffectedObject.rotation = Quaternion.Slerp(m_newRotation, m_oldRotation, (Time.deltaTime * SmootValue));
+					AffectedObject.rotation = Quaternion.Slerp(m_oldRotation, m_newRotation, (Time.deltaTime * SmootValue));
 				else
 					AffectedObject.rotation = m_newRotation;
 		}
@@ -67,12 +69,11 @@ namespace mnUtilities.Transformation
 		/// </summary>
 		public void UpdateObjectRotation()
 		{
+			m_oldRotation = AffectedObject.rotation;
 			RaycastHit hitInfo;
 			if (PerformRaycast(out hitInfo) == true)
 			{
-				m_oldRotation = AffectedObject.rotation;
 				m_newRotation = CalculateLookRotation(-hitInfo.normal);
-				
 				float rotationAngle = Quaternion.Angle(m_newRotation, m_oldRotation);
 				if(rotationAngle > MaxRotationAngle)
 					m_newRotation = m_oldRotation;				
