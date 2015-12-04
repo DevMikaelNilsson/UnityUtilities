@@ -51,8 +51,8 @@ namespace mnUtilities.Pathfinding
 		void OnEnable () 
 		{
 			if(this.GetComponent<Pathfinder>() != null)
-				Debug.LogWarning(this + " - This object has a Pathfinder component attached to it. This can cause unexpected behavior and errors and its not recommended to have both components attached to the same object.")
-			
+				Debug.LogWarning(this + " - This object has a Pathfinder component attached to it. This can cause unexpected behavior and errors and its not recommended to have both components attached to the same object.");
+
 			if(m_transformComponent == null)
 				m_transformComponent = this.GetComponent<Transform>();
 				
