@@ -146,9 +146,20 @@ namespace mnUtilities.Render
 		/// <summary>
 		/// This method gets called whenever the fade (in/out) calculation is finished, and reset the fade variables.
 		/// </summary>
+		/// <summary>
+		/// This method gets called whenever the fade (in/out) calculation is finished, and reset the fade variables.
+		/// </summary>
 		private void FadeObjectFinished()
 		{
-			ToggleOpaqueObject(true);
+			switch(m_currentFadeStatus)
+			{
+				case FadeStatus.FadeIn:
+					ToggleOpaqueObject(true);
+					break;
+				default:
+					ToggleOpaqueObject(false);
+					break;
+			}
 			m_currentFadeStatus = FadeStatus.Waiting;
 		}
 		
