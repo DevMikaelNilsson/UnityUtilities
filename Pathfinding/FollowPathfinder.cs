@@ -37,6 +37,17 @@ namespace mnUtilities.Pathfinding
 		/// </summary>
 		[Tooltip("String parameter name which is a parameter for the Animator which will be updated by the Pathfinder with its current velocity (movement) value.")]
 		public string MovementParam = string.Empty;
+		
+		/// <summary>
+		/// The minimum allowed velocity for the object to follow the Pathfinder object.
+		/// The velocity is calculated locally from the movement of this object and not the Pathfinder object.
+		/// If the objects velocity is below this value, it will stop translating and rotating towards the Pathfinder object.
+		/// The data sent to the AnimatorObject is also affected. If the Pathfinder object is flagged as moving, the value sent to the Animator cant be below this value.
+		/// If the Pathfinder object is NOT flagged as moving, and the velocity is below this value, then the Animator will become 0.0f instead.
+		/// Set minimum value to 0.0f to ignore this functionality.
+		/// </summary>
+		[Tooltip("The minimum allowed velocity for the object to follow the Pathfinder object. The velocity is calculated locally from the movement of this object and not the Pathfinder object. If the objects velocity is below this value, it will stop translating and rotating towards the Pathfinder object. The data sent to the AnimatorObject is also affected:\n\nIf the Pathfinder object is flagged as moving, the value sent to the Animator cant be below this value.\n\nIf the Pathfinder object is NOT flagged as moving, and the velocity is below this value, then the Animator will become 0.0f instead.\n\nSet minimum value to 0.0f to ignore this functionality.")]
+		public float MinVelocity = 0.1f;
 				
 		private NavMeshAgent m_patfinderNavMeshObject = null;
 		private Transform m_pathfinderTransformComponent = null;
@@ -52,7 +63,7 @@ namespace mnUtilities.Pathfinding
 		{
 			if(this.GetComponent<Pathfinder>() != null)
 				Debug.LogWarning(this + " - This object has a Pathfinder component attached to it. This can cause unexpected behavior and errors and its not recommended to have both components attached to the same object.");
-
+				
 			if(m_transformComponent == null)
 				m_transformComponent = this.GetComponent<Transform>();
 				
@@ -149,6 +160,18 @@ namespace mnUtilities.Pathfinding
 		/// <param name="translateVelocity">The current translation velocity.</param>
 		private void UpdateAnimationData(float translateVelocity)
 		{
+			switch(PathfinderObject.ObjectStatus)
+			{
+				case Pathfinder.PathfinderStatus.Moving:
+					if(translateVelocity < MinVelocity)
+						translateVelocity = MinVelocity;
+					break;
+				default:
+					if(translateVelocity < MinVelocity)
+						translateVelocity = 0.0f;
+					break;
+			}
+					
 			if(AnimatorObject != null)
 			{
 				AnimatorObject.SetFloat(MovementParam, translateVelocity);
@@ -166,14 +189,14 @@ namespace mnUtilities.Pathfinding
 		{
 			LoadPathfinderComponents();				
 			if(m_patfinderNavMeshObject != null)
-			{
-				if (velocity > 0.1f) 
-				{					
+			{					
+				if(velocity > MinVelocity)
+				{
 					m_transformComponent.position = Vector3.Lerp(m_transformComponent.position, m_pathfinderTransformComponent.position, (Time.deltaTime * SmoothTranslate));
 					Quaternion currentLookRotation = Quaternion.LookRotation(m_transformComponent.position - m_lastPosition);
 					m_transformComponent.rotation = Quaternion.Lerp(m_transformComponent.rotation, currentLookRotation, (Time.deltaTime * SmoothRotation));
 				}
-			}			
+			}		
 		}
 	}
 }
