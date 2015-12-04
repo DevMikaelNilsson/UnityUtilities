@@ -1,4 +1,6 @@
 #Pathfinding
+Collection of scripts which handles pathfinding functionality in some way.
+Normally the Pathfinding calculation(s) in these scripts are done with the Unitys built in NavMesh pathfinding.
 
 ##FollowPathfinder.cs
 Script which allows a object to follow another object with a Pathfinder script attached to it.
