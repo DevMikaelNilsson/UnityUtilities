@@ -3,7 +3,7 @@ using System.Collections;
 
 namespace mnUtilities.Pathfinding
 {
-  [AddComponentMenu("Pathfinding/Pathfinder")]
+	[AddComponentMenu("Pathfinding/Pathfinder")]
 	public class Pathfinder : MonoBehaviour 
 	{
 		#region :: General member variables
@@ -63,7 +63,6 @@ namespace mnUtilities.Pathfinding
 			/// The objects current status.
 			/// </summary>
 			[Tooltip("The objects current status.")]
-			[HideInInspector]
 			public PathfinderStatus ObjectStatus = PathfinderStatus.Disabled;
 			/// <summary>
 			/// What type of Pathfinding the component should use.
@@ -113,9 +112,22 @@ namespace mnUtilities.Pathfinding
 			/// </summary>
 			[Tooltip("String parameter name which is a parameter for the Animator which will be updated by the Pathfinder with its current velocity (movement) value.")]
 			public string MovementParam = string.Empty;
+			/// <summary>
+			/// A minimum desired velocity the Agent is allowed to have (calculated with NavMeshAgent.Velocity.sqrMagnitude). If the Agents velocity is below this value
+			/// the object status will be automatically set as 'Finished' after a given delay (see SetAsFinishAfterDelay). This value is only applicable when the object is moving
+			/// towards a destination (the object has a valid path to follow).
+			/// </summary>
+			[Tooltip("A minimum desired velocity the Agent is allowed to have (calculated with NavMeshAgent.Velocity.sqrMagnitude). If the Agents velocity is below this value the object status will be automatically set as 'Finished' after a given delay (see SetAsFinishAfterDelay). This value is only applicable when the object is moving towards a destination (the object has a valid path to follow).")]
+			public float MinDesiredVelocity = 0.1f;
+			/// <summary>
+			/// A delay (in seconds) until the objects status is automatically set as 'Finished' if the objects velocity (while moving) is below specified minim velocity (see MinDesiredVelocity).
+			/// </summary>
+			[Tooltip("A delay (in seconds) until the objects status is automatically set as 'Finished' if the objects velocity (while moving) is below specified minim velocity (see MinDesiredVelocity).")]
+			public float SetAsFinishAfterDelay = 1.0f;
 			
 			protected Transform m_transformComponent = null;
 			protected Vector3 m_destinationPosition = Vector3.zero;
+			protected bool m_ObjectIsUnderMinVelocity = false;
 			
 		#endregion
 		
@@ -188,9 +200,22 @@ namespace mnUtilities.Pathfinding
 			/// </summary>
 			protected void UpdateAnimationData()
 			{
+				float translateVelocity = PathAgent.velocity.sqrMagnitude;
+				switch(ObjectStatus)
+				{
+				case Pathfinder.PathfinderStatus.Moving:
+					if(translateVelocity < MinDesiredVelocity)
+						translateVelocity = MinDesiredVelocity;
+					break;
+				default:
+					if(translateVelocity < MinDesiredVelocity)
+						translateVelocity = 0.0f;
+					break;
+				}
+			
 				if(AnimatorObject != null)
 				{
-					AnimatorObject.SetFloat(MovementParam, PathAgent.velocity.magnitude);
+					AnimatorObject.SetFloat(MovementParam, translateVelocity);
 				}
 			}
 			
@@ -285,10 +310,10 @@ namespace mnUtilities.Pathfinding
 					PathMeshObstacle = this.gameObject.AddComponent<NavMeshObstacle>();
 				}
 					
-				if(PathAgent.isActiveAndEnabled == false)
-					PathAgent.enabled = true;
 				if(PathMeshObstacle.isActiveAndEnabled == true)
 					PathMeshObstacle.enabled = false;
+				if(PathAgent.isActiveAndEnabled == false)
+					PathAgent.enabled = true;				
 				
 				ObjectStatus = PathfinderStatus.Waiting;				
 				switch(TypeOfActivePathfinding)
@@ -371,7 +396,7 @@ namespace mnUtilities.Pathfinding
 			/// Update and set the current status.
 			/// </summary>
 			/// <returns>The current object status.</returns>
-			private PathfinderStatus SetObjectStatus()
+			protected PathfinderStatus SetObjectStatus()
 			{
 				switch(ObjectStatus)
 				{
@@ -382,13 +407,61 @@ namespace mnUtilities.Pathfinding
 					float distanceToDestination = Vector3.Distance(m_transformComponent.position, m_destinationPosition);
 					if(distanceToDestination <= MinDistance)
 						ObjectStatus = PathfinderStatus.Finished;
+					else
+						CheckForAgentVelocity();
 					break;
-				}
+				}				
 				
 				return ObjectStatus;
 			}
 			
+			/// <summary>
+			/// Checks the current agent velocity.
+			/// The method checks if the current agent velocity below the minimum allowed
+			/// velocity value. If the value is below, a co-routine will be activated, and when 
+			/// the co-routine delay is up, and the velocity is still below minimum value, the
+			/// agent will be set as finished. 
+			/// This will avoid issues like if the object is blocked by another object, and the 
+			/// agent may find a new path to follow. 
+			/// NOTE: This method only sets the agent as finished and do not fire any new path calculations.
+			/// </summary>
+			protected void CheckForAgentVelocity()
+			{
+				if(PathAgent.velocity.sqrMagnitude < MinDesiredVelocity)
+				{
+					if(m_ObjectIsUnderMinVelocity == false)
+					{
+						m_ObjectIsUnderMinVelocity = true;
+						StartCoroutine(DelayForceFinish());
+					}
+				}
+				else
+					m_ObjectIsUnderMinVelocity = false;
+					
+				curentVelocity = PathAgent.velocity.sqrMagnitude;
+				IsMinVelocity = m_ObjectIsUnderMinVelocity;
+			}
+			
+			public float curentVelocity = 0.0f;
+			public bool IsMinVelocity = false;
+			
+			/// <summary>
+			/// Co-routine to force set a agent as being finished after a given delay (in seconds).
+			/// Forcing the finish flag upon the agent should only be done if the object velocity is below
+			/// the minimum velocity value.
+			/// </summary>
+			/// <returns>The force finish.</returns>
+			private IEnumerator DelayForceFinish()
+			{
+				yield return new WaitForSeconds(SetAsFinishAfterDelay);
+				if(m_ObjectIsUnderMinVelocity == true)
+					ObjectStatus = PathfinderStatus.Finished;
+					
+				m_ObjectIsUnderMinVelocity = false;
+			}
+												
 		#endregion
+		
 		
 		#region :: OneTimeManualPosition Methods		
 		/// <summary>
@@ -404,7 +477,7 @@ namespace mnUtilities.Pathfinding
 				SetObjectStatus();
 				break;
 			default:
-				ObjectStatus = PathfinderStatus.Waiting;
+				ObjectStatus = PathfinderStatus.PathNotFound;
 				break;
 			}
 		}
@@ -434,7 +507,7 @@ namespace mnUtilities.Pathfinding
 					SetObjectStatus();
 					break;
 				default:
-					ObjectStatus = PathfinderStatus.Waiting;
+					ActivateOneTimeRandomPath();
 					break;
 				}
 			}
@@ -464,8 +537,7 @@ namespace mnUtilities.Pathfinding
 							ActivateContinousRandomPath();
 						break;
 					default:
-						ObjectStatus = PathfinderStatus.Waiting;
-						StartCoroutine(DelayEnablePathAgent());
+						ActivateContinousRandomPath();
 						break;
 				}
 			}
