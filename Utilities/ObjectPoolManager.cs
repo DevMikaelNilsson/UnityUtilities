@@ -32,22 +32,14 @@ namespace mnUtilities.Utilities
 			GameObject = 2
 		}
 
-		/// <summary>
-		/// The time delay between creating new objects. Shorter time delay will demand
-		/// more CPU time, but will create all objects faster.
-		/// </summary>
+		[Tooltip("The time delay between creating new objects. Shorter time delay will demand more CPU time, but will create all objects faster.")]
 		public float TimeDelayBetweenCreatingNewObjects = 0.5f;
 
-		/// <summary>
-		/// Time delay to send out a Action call when the Object pool manager is finished with
-		/// creating all objects.
-		/// </summary>
+		[Tooltip("Time delay to send out a Action call when the Object pool manager is finished with creating all objects.")]
 		public float TimeDelayToSendActionNotification = 0.5f;
 
-		/// <summary>
-		/// List of all objects which are placed inside the object pool.
-		/// </summary>
 		[SerializeField]
+		[Tooltip("List of all objects which are placed inside the object pool.")]
 		public List<GameObject> ObjectPoolList = new List<GameObject>();
 
 		[HideInInspector]
@@ -61,6 +53,32 @@ namespace mnUtilities.Utilities
 		/// A Action call which calls a method after the first initial batch of object is created.
 		/// </summary>
 		private Action m_doneCreatingObjects = null;
+
+		private static ObjectPoolManager m_currentInstance = null;
+
+		/// <summary>
+		/// Returns the active instance. If there is no active instance, a new instance will be 
+		/// automatically created and returned.
+		/// </summary>
+		public static ObjectPoolManager Instance
+		{
+			get
+			{
+				if (m_currentInstance == null)
+				{
+					m_currentInstance = (ObjectPoolManager)FindObjectOfType(typeof(ObjectPoolManager));
+				}
+
+				// If it is still null, create a new instance
+				if (m_currentInstance == null)
+				{
+					GameObject obj = new GameObject("ObjectPoolManager");
+					m_currentInstance = (ObjectPoolManager)obj.AddComponent(typeof(ObjectPoolManager));
+				}
+
+				return m_currentInstance;
+			}
+		}
 
 		/// <summary>
 		/// Start this instance. Creates the given number of objects in each individual pool.
@@ -120,13 +138,6 @@ namespace mnUtilities.Utilities
 			m_internalObjectPool[listIteratorValue].Add(tempObject);
 		}
 
-		protected IEnumerator AddComponentToObject(GameObject tempObject, float delayTime)
-		{
-			yield return new WaitForSeconds((delayTime * 40.2f));
-			ObjectPoolObject test = (ObjectPoolObject)tempObject.AddComponent(typeof(ObjectPoolObject));
-			test.ObjectPoolManagerObject = this;
-		}
-
 		/// <summary>
 		/// Retrieves a object from the object pool.
 		/// </summary>
@@ -148,7 +159,7 @@ namespace mnUtilities.Utilities
 
 				if (activateDirect == true)
 					ActivatetObject(returnGameObject);
-				if (callOnMethodWhenCollected != string.Empty && returnGameObject != null)
+				if (returnGameObject != null && string.Equals(callOnMethodWhenCollected, string.Empty) == false)
 					returnGameObject.SendMessage(callOnMethodWhenCollected, SendMessageOptions.DontRequireReceiver);
 
 				return returnGameObject;
@@ -178,27 +189,7 @@ namespace mnUtilities.Utilities
 		public GameObject GetObjectFromPool(GetObjectByType objectType, string typeString, bool activateDirect, bool isVisible, string callOnMethodWhenCollected)
 		{
 			GameObject objectFromPool = GetObjectFromPool(objectType, typeString, activateDirect, callOnMethodWhenCollected);
-			if (objectFromPool != null)
-			{
-				Renderer objectFromPoolRenderObject = objectFromPool.GetComponent<Renderer>();
-				if (objectFromPoolRenderObject != null)
-					objectFromPoolRenderObject.enabled = isVisible;
-				else
-				{
-					SpriteRenderer spriteRenderComponent = objectFromPool.GetComponent<SpriteRenderer>();
-					if (spriteRenderComponent != null)
-						spriteRenderComponent.enabled = isVisible;
-				}
-
-				Renderer []childRenderObjects = (Renderer[])objectFromPool.GetComponentsInChildren<Renderer>();
-				int objectCount = childRenderObjects.Length;
-				for(int i = 0; i < objectCount; ++i)
-					childRenderObjects[i].enabled = isVisible;
-
-				if (callOnMethodWhenCollected != string.Empty)
-					objectFromPool.SendMessage(callOnMethodWhenCollected, SendMessageOptions.DontRequireReceiver);
-			}
-
+			ToggleVisible(objectFromPool, isVisible);
 			return objectFromPool;
 		}
 
@@ -234,9 +225,28 @@ namespace mnUtilities.Utilities
 		/// </param>
 		private void ToggleVisible(GameObject currentObject, bool isVisible)
 		{
-			Renderer currentRenderObject = currentObject.GetComponent<Renderer>();
-			if(currentRenderObject != null)
-				currentRenderObject.enabled = isVisible;
+			if(currentObject == null)
+				return;
+
+			Renderer objectFromPoolRenderObject = currentObject.GetComponent<Renderer>();
+			if (objectFromPoolRenderObject != null)
+				objectFromPoolRenderObject.enabled = isVisible;
+			else
+			{
+				SpriteRenderer spriteRenderComponent = currentObject.GetComponent<SpriteRenderer>();
+				if (spriteRenderComponent != null)
+					spriteRenderComponent.enabled = isVisible;
+			}
+
+			Renderer []childRenderObjects = (Renderer[])currentObject.GetComponentsInChildren<Renderer>();
+			int objectCount = childRenderObjects.Length;
+			for(int i = 0; i < objectCount; ++i)
+				childRenderObjects[i].enabled = isVisible;
+
+			SpriteRenderer []spriteChildRenderObjects = (SpriteRenderer[])currentObject.GetComponentsInChildren<SpriteRenderer>();
+			objectCount = spriteChildRenderObjects.Length;
+			for(int i = 0; i < objectCount; ++i)
+				spriteChildRenderObjects[i].enabled = isVisible;		
 		}
 
 		/// <summary>
@@ -306,9 +316,10 @@ namespace mnUtilities.Utilities
 			{
 				if (m_internalObjectPool[index] == currentList)
 					return index;
-				else
-					index += 1;
+
+				index += 1;
 			}
+
 			return -1;
 		}
 
@@ -337,7 +348,7 @@ namespace mnUtilities.Utilities
 						currentObjectTypeString = ObjectPoolList[index].name;
 						break;
 					case GetObjectByType.GameObject:
-						currentObjectTypeString = ObjectPoolList[index].name.ToString();
+						currentObjectTypeString = ObjectPoolList[index].name;
 						break;
 					default:
 						return null;
@@ -345,11 +356,9 @@ namespace mnUtilities.Utilities
 					 
 					if (string.Equals(currentObjectTypeString, typeString) == true)
 						return m_internalObjectPool[index];
-					else
-						index += 1;
 				}
-				else
-					index += 1;
+
+				index += 1;
 			}
 
 			return null;
@@ -379,10 +388,10 @@ namespace mnUtilities.Utilities
 					if(ObjectPoolList != null)
 					{
 						if (ObjectPoolList[index] != null)
-					{
-						float delayValue = (Time.fixedTime * (float)iterator);
-						StartCoroutine(CreateObjectAndAddToList(ObjectPoolList[index], iterator, delayValue));
-					}
+						{
+							float delayValue = (Time.fixedTime * (float)iterator);
+							StartCoroutine(CreateObjectAndAddToList(ObjectPoolList[index], iterator, delayValue));
+						}
 					}
 					iterator += 1;
 				}
