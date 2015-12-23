@@ -3,6 +3,7 @@ using System.Collections;
 
 namespace mnUtilities.Pathfinding
 {
+	[AddComponentMenu("Pathfinding/PathfinderFollowObject")]
 	public class PathfinderFollowObject : PathfinderBase 
 	{
 		public enum FollowObjectType
