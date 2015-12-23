@@ -67,5 +67,25 @@ namespace EditorUtillities
 
 			return 0;
 		}
+
+		public void CreateArrayPropertyField(SerializedProperty arrayObject, string text, string tooltipText)
+		{
+			if(CreateButton("Add", "Add element to list.") == true)
+				arrayObject.arraySize += 1;
+
+			int objectCount = arrayObject.arraySize;
+			for(int i = 0; i < objectCount; ++i)
+			{
+				EditorGUILayout.BeginHorizontal();
+				CreatePropertyField(arrayObject.GetArrayElementAtIndex(i), text, tooltipText);
+				bool removeButtonIsPressed = CreateButton("Remove", "Removes the current element from the list.");
+				EditorGUILayout.EndHorizontal();
+				if(removeButtonIsPressed == true)
+				{
+					arrayObject.DeleteArrayElementAtIndex(i);
+					break;
+				}
+			}
+		}
 	}
 }
