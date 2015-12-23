@@ -48,16 +48,17 @@ public class TriggerComponentEditor : EditorUtillities.BaseEditor
 			{
 				GameObject triggerGameObject = (GameObject)triggerObject.objectReferenceValue;
 				Behaviour []methodList = triggerGameObject.GetComponents<Behaviour>();
-				List<string> behaviourNames = LoadMethodsFromGameObject(methodList);
-
-				Behaviour currentBehaviour = (Behaviour)triggerComponent.objectReferenceValue;
-				int currentIndex = GetCurrentBehaviourIndex(methodList, currentBehaviour);
-				currentIndex = CreatePopupList(behaviourNames.ToArray(), currentIndex, "Component:", "Component which will be enabled/re-enabled whenever a trigger (collision) is registered.");
-				currentBehaviour = methodList[currentIndex];
-				triggerComponent.objectReferenceValue = currentBehaviour;
+				if(methodList == null || methodList.Length > 0)
+				{
+					List<string> behaviourNames = LoadMethodsFromGameObject(methodList);
+					Behaviour currentBehaviour = (Behaviour)triggerComponent.objectReferenceValue;
+					int currentIndex = GetCurrentBehaviourIndex(methodList, currentBehaviour);
+					currentIndex = CreatePopupList(behaviourNames.ToArray(), currentIndex, "Component:", "Component which will be enabled/re-enabled whenever a trigger (collision) is registered.");
+					currentBehaviour = methodList[currentIndex];
+					triggerComponent.objectReferenceValue = currentBehaviour;
+				}
 			}
-
-
+			
 			bool removeButtonIsPressed = CreateButton("Remove", "Removes the current element from the list.");
 
 			if(removeButtonIsPressed == true)
