@@ -3,7 +3,7 @@ using System.Collections;
 
 namespace mnUtilities.Pathfinding
 {
-	[AddComponentMenu("Pathfinding/Pathfinder")]
+	[AddComponentMenu("Pathfinding/PathfinderRandomPosition")]
 	public class PathfinderRandomPosition : PathfinderBase 
 	{
 		public enum RandomPathType
