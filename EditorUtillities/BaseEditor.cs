@@ -87,5 +87,20 @@ namespace EditorUtillities
 				}
 			}
 		}
+		
+		public bool CreateFoldOut(bool displayFoldOut, string text, string tooltipText)
+		{
+			GUIContent content = new GUIContent(text, tooltipText);
+			return EditorGUILayout.Foldout(displayFoldOut, content);
+		}
+	
+		public void CreateLabel(string text, string tooltipText, bool boldText)
+		{
+			GUIContent content = new GUIContent(text, tooltipText);
+			if(boldText == false)
+				EditorGUILayout.LabelField(content);
+			else
+				EditorGUILayout.LabelField(content, EditorStyles.boldLabel);
+		}		
 	}
 }
