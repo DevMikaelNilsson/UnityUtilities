@@ -11,7 +11,7 @@ namespace mnUtilities.Pathfinding
 		/// It's recomended that the Pathfinder component is on a different GameObject.
 		/// </summary>
 		[Tooltip("Reference to the Pathfinder object which this object will follow. It's recomended that the Pathfinder component is on a different GameObject.")]
-		public Pathfinder PathfinderObject = null;
+		public PathfinderBase PathfinderObject = null;
 		/// <summary>
 		/// A offset to the Pathfinder position. This offset vector will be added to the current Pathfinder component position at every update cycle.
 		/// </summary>
@@ -61,7 +61,7 @@ namespace mnUtilities.Pathfinding
 		/// </summary>
 		void OnEnable () 
 		{
-			if(this.GetComponent<Pathfinder>() != null)
+			if(this.GetComponent<PathfinderRandomPosition>() != null)
 				Debug.LogWarning(this + " - This object has a Pathfinder component attached to it. This can cause unexpected behavior and errors and its not recommended to have both components attached to the same object.");
 				
 			if(m_transformComponent == null)
@@ -82,6 +82,9 @@ namespace mnUtilities.Pathfinding
 		{
 			if(PathfinderObject != null)
 			{
+				if(m_pathfinderTransformComponent == null)
+					LoadPathfinderComponents();
+
 				Vector3 currentDirection = (m_transformComponent.position - (m_pathfinderTransformComponent.position + OffsetPosition));
 				float currentVelocity = currentDirection.sqrMagnitude;
 				UpdatePosition(currentVelocity);
@@ -95,7 +98,7 @@ namespace mnUtilities.Pathfinding
 		/// Get/Set the current Pathfinder status.
 		/// </summary>
 		/// <value>The current Pathfinder status.</value>
-		public Pathfinder.PathfinderStatus ObjectStatus
+		public PathfinderRandomPosition.PathfinderStatus ObjectStatus
 		{
 			get
 			{
@@ -104,7 +107,7 @@ namespace mnUtilities.Pathfinding
 				else
 				{
 					Debug.LogWarning(this + " - PathfinderObject is either missing or not valid. Can not retrieve proper Object status.");
-					return Pathfinder.PathfinderStatus.Disabled;
+					return PathfinderRandomPosition.PathfinderStatus.Disabled;
 				}
 			}
 			
@@ -160,9 +163,10 @@ namespace mnUtilities.Pathfinding
 		/// <param name="translateVelocity">The current translation velocity.</param>
 		private void UpdateAnimationData(float translateVelocity)
 		{
+			
 			switch(PathfinderObject.ObjectStatus)
 			{
-				case Pathfinder.PathfinderStatus.Moving:
+				case PathfinderRandomPosition.PathfinderStatus.Moving:
 					if(translateVelocity < MinVelocity)
 						translateVelocity = MinVelocity;
 					break;
