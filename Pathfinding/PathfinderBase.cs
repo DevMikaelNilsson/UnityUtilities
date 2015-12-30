@@ -56,6 +56,15 @@ namespace mnUtilities.Pathfinding
 		/// </summary>
 		[Tooltip("Enable flag to make the Pathfinder to start moving direct when the object is enabled/re-enabled.")]
 		public bool ActiveOnStart = true;
+
+		/// <summary>
+		/// A delay (in seconds) in between the PathMeshObstacle is disabled and the PathAgent is enabled and active. There can be issues when attempting to find a valid path when 
+		/// disabling the MeshObstacle and enabling the PathAgent within a given time frame. To avoid a issue there is a delay from the MeshObstacle is disabled and the PathAgent is active.
+		/// This delay can also be set through code, by waiting calling the 'CreateDestinationPath()' method manually.
+		/// </summary>
+		[Tooltip("A delay (in seconds) in between the PathMeshObstacle is disabled and the PathAgent is enabled and active. There can be issues when attempting to find a valid path when disabling the MeshObstacle and enabling the PathAgent within a given time frame. To avoid a issue there is a delay from the MeshObstacle is disabled and the PathAgent is active. This delay can also be set through code, by waiting calling the 'CreateDestinationPath()' method manually.")]
+		public float ActivationDelay = 1.0f;
+
 		/// <summary>
 		/// Enable flag to perform a check so the Pathfinder object will be placed on a valid position on a NavMesh area. 
 		/// This means that the object can be placed on a different position than it had when it was enabled/re-enabled.
@@ -121,8 +130,7 @@ namespace mnUtilities.Pathfinding
 			if(PathAgent.isActiveAndEnabled == false)
 			{
 				ObjectStatus = PathfinderStatus.Waiting;
-				PathMeshObstacle.enabled = false;			
-				//StartCoroutine(DelayEnablePathAgent());
+				StartCoroutine(DelayActivatePathAgent());
 			}
 		}		
 		
@@ -172,6 +180,7 @@ namespace mnUtilities.Pathfinding
 			m_destinationPosition = destination;
 			EnablePathAgent();
 		}
+	
 
 		/// <summary>
 		/// Enables the Pathfinder and locates a destination position based on the components settings.
@@ -190,11 +199,28 @@ namespace mnUtilities.Pathfinding
 				Debug.LogWarning(this + " - NavMeshObstacle is either missing or not valid. Adding NavMeshObstacle to object.");
 				PathMeshObstacle = this.gameObject.AddComponent<NavMeshObstacle>();
 			}
-				
-			if(PathMeshObstacle.isActiveAndEnabled == true)
+
+			if(PathMeshObstacle.isActiveAndEnabled == true && PathAgent.isActiveAndEnabled == false)
+				StartCoroutine(DelayActivatePathAgent());
+		}
+
+		/// <summary>
+		/// Co-routine to disable the MeshObstacle and activating the PathAgent.
+		/// There might be issues when disabling/enabling these two at the same time, because the PathAgent can not 
+		/// find a path when the MeshObstacle is still blocking. So this co-routine will force a given delay before the PathAgent is active,
+		/// letting the Pathfinder map be properly updated. This delay can be ignored (set delay value to 0.0f) if a delay is built into the component which 
+		/// inherits this component.
+		/// </summary>
+		protected IEnumerator DelayActivatePathAgent()
+		{
+			if(PathMeshObstacle.enabled == true)
+			{
 				PathMeshObstacle.enabled = false;
-			if(PathAgent.isActiveAndEnabled == false)
-				PathAgent.enabled = true;	
+				yield return new WaitForSeconds(ActivationDelay);
+				PathAgent.enabled = true;
+			}
+			else
+				Debug.LogWarning(this + " - PathMeshObstacle is already inactive. Can not activate DelayActivatePathAgent coroutine.");
 		}
 
 		/// <summary>
@@ -209,13 +235,10 @@ namespace mnUtilities.Pathfinding
 		protected PathfinderStatus CreateRandomPath(Vector3 minRandomAreaPoint, Vector3 maxRandomAreaPoint)
 		{
 			if(PathAgent.isActiveAndEnabled == false)
-			{
-				Debug.LogWarning(this + " - NavMeshAgent is either not active and enabled. Can not set destination position.");
 				return PathfinderStatus.Disabled;
-			}
 			else if(PathAgent.isOnOffMeshLink == true || PathAgent.isOnNavMesh == true)
 			{
-				m_destinationPosition = TabUtilities.Math.RandomVector(minRandomAreaPoint, maxRandomAreaPoint);
+				m_destinationPosition = RandomVector(minRandomAreaPoint, maxRandomAreaPoint);
 				if(PathAgent.SetDestination(m_destinationPosition) == true)
 					return PathfinderStatus.PathFound;
 			}
@@ -226,20 +249,43 @@ namespace mnUtilities.Pathfinding
 		}
 
 		/// <summary>
+		/// Creats a random vector3 within the min and max values.
+		/// </summary>
+		/// <param name="minValue">The minimum value.</param>
+		/// <param name="maxValue">The maximum value.</param>
+		/// <returns>A randomized vector3 within given boundaries.</returns>
+		protected Vector3 RandomVector(Vector3 minValue, Vector3 maxValue)
+		{
+			Vector3 newVectorValue = Vector3.zero;
+			newVectorValue.x = UnityEngine.Random.Range(minValue.x, maxValue.x);
+			newVectorValue.y = UnityEngine.Random.Range(minValue.y, maxValue.y);
+			newVectorValue.z = UnityEngine.Random.Range(minValue.z, maxValue.z);
+			return newVectorValue;
+		}
+
+		/// <summary>
+		/// Creates a path to a given destination.
+		/// </summary>
+		/// <param name="destination">The destination point which the Pathfinder should create a valid path towards.</param>
+		/// <returns>>The current status.</returns>
+		protected PathfinderStatus CreateDestinationPath(Vector3 destination)
+		{
+			m_destinationPosition = destination;
+			return CreateDestinationPath();
+		}
+
+		/// <summary>
 		/// Creates a path to a given destination.
 		/// The destination should be set before this method is called.
 		/// If the method fails to find a valid path to the destination position,
 		/// the method will not attempt to find a new path due to the destination is fixed.
 		/// In order to get a valid path, the method must be called manually.
 		/// </summary>
+		/// <returns>>The current status.</returns>
 		protected PathfinderStatus CreateDestinationPath()
 		{
 			if(PathAgent.isActiveAndEnabled == false)
-			{
-				Debug.LogWarning(this + " - NavMeshAgent is either not active and enabled. Can not set destination position.");	
-				return PathfinderStatus.Disabled;	
-
-			}
+				return PathfinderStatus.Disabled;
 			else if(PathAgent.isOnOffMeshLink == true || PathAgent.isOnNavMesh == true)
 			{
 				if(PathAgent.SetDestination(m_destinationPosition) == true)
