@@ -73,7 +73,7 @@ namespace mnUtilities.Transformation
 		/// <returns>The total amount of time it will take the object to finish the rotation.</returns>
 		public float RotateTo(Vector3 lookAtPosition, float timeDiff)
 		{
-			m_currentDuration = (Duration / timeDiff);
+			m_currentDuration = (Duration * timeDiff);
 			m_transformComponent = this.GetComponent<Transform>();
 			return ActivateRotation(lookAtPosition);
 		}
@@ -87,7 +87,7 @@ namespace mnUtilities.Transformation
 		/// <returns>The total amount of time it will take the object to finish the rotation.</returns>
 		public float RotateTo(Transform objectToRotate, Vector3 lookAtPosition, float timeDiff)
 		{
-			m_currentDuration = (Duration / timeDiff);
+			m_currentDuration = (Duration * timeDiff);
 			m_transformComponent = objectToRotate;
 			return ActivateRotation(lookAtPosition);
 		}
