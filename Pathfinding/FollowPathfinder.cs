@@ -175,7 +175,7 @@ namespace mnUtilities.Pathfinding
 						translateVelocity = 0.0f;
 					break;
 			}
-					
+
 			if(AnimatorObject != null)
 			{
 				AnimatorObject.SetFloat(MovementParam, translateVelocity);
