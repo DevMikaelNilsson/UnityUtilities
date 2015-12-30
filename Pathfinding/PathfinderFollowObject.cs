@@ -3,7 +3,6 @@ using System.Collections;
 
 namespace mnUtilities.Pathfinding
 {
-	[AddComponentMenu("Pathfinding/PathfinderFollowObject")]
 	public class PathfinderFollowObject : PathfinderBase 
 	{
 		public enum FollowObjectType
@@ -36,7 +35,7 @@ namespace mnUtilities.Pathfinding
 			if(PathAgent != null)
 				PathAgent.enabled = false;
 			if(PathMeshObstacle != null)
-				PathMeshObstacle.enabled = false;
+				PathMeshObstacle.enabled = true;
 				
 			if(PositionOnNavMesh == true)
 				SetPositionOnNavMesh();
@@ -52,10 +51,11 @@ namespace mnUtilities.Pathfinding
 		/// </summary>
 		void Update()
 		{
+			m_elapsedTime += (Time.deltaTime * Time.timeScale);
+			float procentage = (m_elapsedTime / Duration);
+
 			if(PathAgent.isActiveAndEnabled == true)
 			{
-				m_elapsedTime += (Time.deltaTime * Time.timeScale);
-				float procentage = (m_elapsedTime / Duration);
 				if(procentage >= 1.0f)
 					EnableFollowobjectPathAgent();
 
@@ -68,7 +68,7 @@ namespace mnUtilities.Pathfinding
 						break;
 				}
 			}
-			else if(CheckDistanceToObject() == true)
+			else if(procentage >= 1.0f && CheckDistanceToObject() == true)
 				EnableFollowobjectPathAgent();
 			
 			UpdateAnimationData();
@@ -116,11 +116,14 @@ namespace mnUtilities.Pathfinding
 				{
 					EnablePathAgent(destinationPosition);
 					PathfinderStatus status = CreateDestinationPath();
-
-					if(status != PathfinderStatus.PathNotFound)
+					switch(status)
 					{
-						ObjectStatus = PathfinderStatus.Moving;
-						return;
+						case PathfinderStatus.Finished:
+						case PathfinderStatus.Moving:
+						case PathfinderStatus.PathFound:
+						case PathfinderStatus.Waiting:
+							ObjectStatus = PathfinderStatus.Moving;
+							return;
 					}
 				}
 			}
