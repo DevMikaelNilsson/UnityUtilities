@@ -3,7 +3,7 @@ using System.Collections;
 
 namespace mnUtilities.AI.ActionList
 {
-	public class AiActionListBase : MonoBehaviour
+	public class ActionListBase : MonoBehaviour
 	{
 		public Transform Target = null;
 		protected bool m_actionIsBlocking = false;
