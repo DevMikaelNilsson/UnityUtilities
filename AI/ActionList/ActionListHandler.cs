@@ -3,7 +3,7 @@ using System.Collections;
 
 namespace mnUtilities.AI.ActionList
 {
-	public class AIActionListHandler : MonoBehaviour 
+	public class ActionListHandler : MonoBehaviour 
 	{
 		/// <summary>
 		/// A list of possible actions the AI handler can perform. The execution (or attempt to execute) priority is made from the top of the list, 
