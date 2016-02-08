@@ -14,4 +14,4 @@ A base component which any Pathfinder component can be based on.
 The component contains all required components to move a object with the NavMeshAgent functionality.
 
 ##PathfinderMoveTo.cs
-Moves to a specific destination.
+Moves to a specific destination. Inherits from the PathfinderBase.cs component.
