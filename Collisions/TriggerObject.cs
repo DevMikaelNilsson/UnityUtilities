@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-namespace TabUtilities.Collisions
+namespace mnUtilities.Collisions
 {
 	public class TriggerObject : MonoBehaviour 
 	{
