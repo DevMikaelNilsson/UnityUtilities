@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using mnUtilities.Utilities;
 
 namespace mnUtilities.Collisions
 {
@@ -18,11 +19,15 @@ namespace mnUtilities.Collisions
 		[Tooltip("Enable flag to disables the component(s) at startup. All these component(s) are re-enabled when a trigger (collision) is registered.")]
 		public bool DisableOnStartup = true;
 
+		public float TriggerDelay = 0.0f;
+
 		/// <summary>
 		/// Component(s) which will be enabled/re-enabled whenever a trigger (collision) is registered.
 		/// </summary>
 		[Tooltip("Component(s) which will be enabled/re-enabled whenever a trigger (collision) is registered.")]
 		public TriggerProperties []EnableComponents = null;
+
+		public InvokeMethodHandler []InvokeOnTrigger = null;
 
 		private bool m_isTriggered = false;
 
@@ -46,12 +51,32 @@ namespace mnUtilities.Collisions
 		/// <param name="isActive">Set to true to activate trigger. Set to false to reset/disable the triggere object(s) and component(s).</param>
 		public void ToggleTrigger(bool isActive)
 		{
+			if(isActive == true)
+				StartCoroutine(DelayToggleTrigger(TriggerDelay, true));
+			else
+				StartCoroutine(DelayToggleTrigger(0.0f, false));
+		}
+
+		private IEnumerator DelayToggleTrigger(float delay, bool isActive)
+		{
+			yield return new WaitForSeconds(delay);
 			if(m_isTriggered == false)
 			{
 				int objectCount = EnableComponents.Length;
 				for(int i = 0; i < objectCount; ++i)
 				{
-					EnableComponents[i].TriggerComponent.enabled = isActive;
+					if(EnableComponents[i].TriggerComponent != null)
+						EnableComponents[i].TriggerComponent.enabled = isActive;
+				}
+
+				if(isActive == true)
+				{
+					objectCount = InvokeOnTrigger.Length;
+					for(int i = 0; i < objectCount; ++i)
+					{
+						if(InvokeOnTrigger[i] != null)
+							InvokeOnTrigger[i].InvokeMethod();
+					}
 				}
 			}
 
