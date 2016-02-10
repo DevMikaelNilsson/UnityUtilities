@@ -111,6 +111,12 @@ namespace mnUtilities.Pathfinding
 			}
 		}
 
+		private void UpdateAnimation(float velocity)
+		{
+			if(AnimatorObject != null)
+				AnimatorObject.SetFloat(MovementParam, velocity);
+		}
+
 		/// <summary>
 		/// Updates the objects position.
 		/// The position and rotation are both linear interpolated as long as the object is moving.
@@ -128,7 +134,10 @@ namespace mnUtilities.Pathfinding
 					m_transformComponent.position = Vector3.Lerp(m_transformComponent.position, m_pathfinderTransformComponent.position, (Time.deltaTime * SmoothTranslate));
 					Quaternion currentLookRotation = Quaternion.LookRotation(m_transformComponent.position - m_lastPosition);
 					m_transformComponent.rotation = Quaternion.Lerp(m_transformComponent.rotation, currentLookRotation, (Time.deltaTime * SmoothRotation));
+					UpdateAnimation(velocity);
 				}
+				else
+					UpdateAnimation(0.0f);
 			}		
 		}
 
