@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-namespace AI.Skynet
+namespace mnUtilities.AI.Skynet
 {
 	[System.Serializable]
 	public class GridZone

@@ -83,8 +83,6 @@ namespace mnUtilities.AI.Skynet
 				}
 				else
 				{
-					Vector3 positionDistance = (objectToRegister.position - m_gridComponents[i].Position);
-
 					if(distance < closestDistance)
 					{
 						currentGridZone = m_gridComponents[i];

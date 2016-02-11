@@ -8,16 +8,16 @@ namespace mnUtilities.AI.Skynet
 		public Transform Target = null;
 		public bool CreateGrid = true;
 
-		private CreateGrid m_gridComponent = null;
+		private Grid m_gridComponent = null;
 
 		void OnEnable()
 		{
 			if(CreateGrid == true)
 			{
 				if(m_gridComponent == null)
-					m_gridComponent = this.gameObject.GetComponent<CreateGrid>();
+					m_gridComponent = this.gameObject.GetComponent<Grid>();
 				if(m_gridComponent == null)
-					m_gridComponent = this.gameObject.AddComponent<CreateGrid>();
+					m_gridComponent = this.gameObject.AddComponent<Grid>();
 
 				m_gridComponent.InitializeGrid();
 			}

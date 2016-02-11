@@ -27,7 +27,7 @@ namespace mnUtilities.Collisions
 		[Tooltip("Component(s) which will be enabled/re-enabled whenever a trigger (collision) is registered.")]
 		public TriggerProperties []EnableComponents = null;
 
-		public InvokeMethodHandler []InvokeOnTrigger = null;
+		public InvokeMethod []InvokeOnTrigger = null;
 
 		private bool m_isTriggered = false;
 
@@ -75,7 +75,7 @@ namespace mnUtilities.Collisions
 					for(int i = 0; i < objectCount; ++i)
 					{
 						if(InvokeOnTrigger[i] != null)
-							InvokeOnTrigger[i].InvokeMethod();
+							InvokeOnTrigger[i].Invoke();
 					}
 				}
 			}

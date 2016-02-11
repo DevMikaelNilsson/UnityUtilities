@@ -10,7 +10,7 @@ namespace mnUtilities.AI.ActionList
 		/// going downwards. So the higher a action is in the list, the more important is the action.
 		/// </summary>
 		[Tooltip("A list of possible actions the AI handler can perform. The execution (or attempt to execute) priority is made from the top of the list, going downwards. So the higher a action is in the list, the more important is the actionh.")]
-		public AiActionBase []ActionList = null;
+		public ActionListBase []ActionList = null;
 
 		/// <summary>
 		/// Internal Unity method.

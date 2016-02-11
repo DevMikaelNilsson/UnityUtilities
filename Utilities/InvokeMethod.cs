@@ -32,16 +32,8 @@ namespace mnUtilities.Utilities
 		/// <summary>
 		/// Invokes the registered method.
 		/// </summary>
-		public void InvokeMethod()
-		{
-			InvokeMethod(null);
-		}
-
-		/// <summary>
-		/// Invokes the registered method.
-		/// </summary>
 		/// <param name="parameters">Array of parameters which will be send with the invoke.</param>
-		public void InvokeMethod(object []parameters)
+		public void Invoke(object []parameters)
 		{
 			// Eventhough the invoke method should always be activated, I keep the send message method for backup.
 			// The SendMessage probably costs more performance when called every FixedUpdate, and should be avoided.
@@ -63,9 +55,9 @@ namespace mnUtilities.Utilities
 		/// <summary>
 		/// Invokes the registered method.
 		/// </summary>
-		public void InvokeMethod()
+		public void Invoke()
 		{
-			InvokeMethod(null);
+			Invoke(null);
 		}
 
 		/// <summary>

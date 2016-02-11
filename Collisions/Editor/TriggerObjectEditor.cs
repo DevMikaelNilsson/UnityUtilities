@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEditor;
 using System.Collections;
 using System.Collections.Generic;
-using TabUtilities.Collisions;
+using mnUtilities.Collisions;
 
 [CustomEditor(typeof(TriggerObject))]
 public class TriggerObjectEditor : EditorUtillities.BaseEditor
