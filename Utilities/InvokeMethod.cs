@@ -3,7 +3,7 @@ using System.Collections;
 using System.Reflection;
 using System.Collections.Generic;
 using System.Text;
-using TABUnitySDK;
+using System;
 
 namespace mnUtilities.Utilities
 {
@@ -24,26 +24,48 @@ namespace mnUtilities.Utilities
 		/// </summary>
 		private Component m_componentObject = null;
 
-		private PhoenixController m_phoenixControllerObject = null;
-
 		void OnEnable()
 		{
 			LoadMethod();
 		}
 
+		/// <summary>
+		/// Invokes the registered method.
+		/// </summary>
 		public void InvokeMethod()
+		{
+			InvokeMethod(null);
+		}
+
+		/// <summary>
+		/// Invokes the registered method.
+		/// </summary>
+		/// <param name="parameters">Array of parameters which will be send with the invoke.</param>
+		public void InvokeMethod(object []parameters)
 		{
 			// Eventhough the invoke method should always be activated, I keep the send message method for backup.
 			// The SendMessage probably costs more performance when called every FixedUpdate, and should be avoided.
 			if (m_methodInfoComponent != null && m_componentObject != null)
-				m_methodInfoComponent.Invoke(m_componentObject, null);
+			{
+				try
+				{
+					m_methodInfoComponent.Invoke(m_componentObject, parameters);
+				}
+				catch(Exception e)
+				{
+					Debug.LogError(this + " - Failed to invoke method:\n" + e.ToString());
+				}
+			}
 			else if (ReceiveObject != null)
 				ReceiveObject.SendMessage(ReceiveMethod, SendMessageOptions.RequireReceiver);
+		}
 
-			if (m_phoenixControllerObject == null)
-				m_phoenixControllerObject = PhoenixController.Instance;
-
-			m_phoenixControllerObject.ResetIdleTime();		
+		/// <summary>
+		/// Invokes the registered method.
+		/// </summary>
+		public void InvokeMethod()
+		{
+			InvokeMethod(null);
 		}
 
 		/// <summary>
@@ -167,6 +189,8 @@ namespace mnUtilities.Utilities
 
 			StringBuilder errorString = new StringBuilder();
 			errorString.Append(this.ToString());
+			errorString.Append(" - ");
+			errorString.Append(this.gameObject.ToString());
 			errorString.Append(" - No valid component was found for '");
 			errorString.Append(currentObject.ToString());
 			errorString.Append("' with the method '");
