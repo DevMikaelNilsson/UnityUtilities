@@ -60,7 +60,7 @@ namespace mnUtilities.AI.Skynet
 			if(CreateGameObjects == true && Application.isEditor == true)
 			{
 				newZoneGrid.SetGameObject(new GameObject(), parent);
-				newZoneGrid.GridObject.AddComponent<BoxCollider>().size = Size;
+				newZoneGrid.CreateCollisionBox(Size);
 			}
 
 			newZoneGrid.SetPosition(position);
@@ -105,44 +105,6 @@ namespace mnUtilities.AI.Skynet
 		public bool UnregisterObjectWithZone(Transform objectToUnregister, GridZone registeredZone)
 		{
 
-			return false;
-		}
-	}
-
-	[System.Serializable]
-	public class GridZone
-	{
-		public GameObject GridObject = null;
-		public Vector3 Position = Vector3.zero;
-
-		private Transform m_transformComponent = null;
-
-		public void SetGameObject(GameObject newObject, Transform parent)
-		{
-			GridObject = newObject;
-			if(SetTransform() == true)
-				m_transformComponent.parent = parent;
-		}
-
-		public void SetPosition(Vector3 position)
-		{
-			if(SetTransform() == true)
-				m_transformComponent.position = position;
-
-			Position = position;
-		}
-
-		private bool SetTransform()
-		{
-			if(GridObject != null)
-			{
-				if(m_transformComponent == null)
-					m_transformComponent = GridObject.GetComponent<Transform>();
-
-				return true;
-			}
-
-			m_transformComponent = null;
 			return false;
 		}
 	}
