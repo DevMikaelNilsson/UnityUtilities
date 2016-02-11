@@ -1,12 +1,12 @@
 using UnityEngine;
 using System;
 
+/*
+	This code is based on the tutorial and source code from Catlike Coding.
+	Link: http://catlikecoding.com/unity/tutorials/curves-and-splines/
+*/
 namespace mnUtilities.BezierCurve.Spline
 {
-	/// <summary>
-	/// This code is based on the tutorial and source code from Catlike Coding.
-	/// Link: http://catlikecoding.com/unity/tutorials/curves-and-splines/
-	/// </summary>	
 	public class BezierSpline : MonoBehaviour 
 	{
 		[SerializeField]
